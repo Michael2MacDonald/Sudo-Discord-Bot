@@ -95,15 +95,19 @@ function helpCommand(arguments, receivedMessage) {
         receivedMessage.channel.send("I do not know this command.");
     }
   } else {
-    var helpMessage = "Commands:\n";
+    var helpMessage = "**About:**\n";
+    helpMessage += "This bot was made by ``Michael2#13431`` \n";
+    helpMessage += "**Commands:**\n";
     helpMessage += "`sudo help` or `sudo -h` Help Message (This Message)\n";
     helpMessage += "`sudo -h [command]` Help Message For Command\n";
     helpMessage += "`sudo list` or `sudo -l` List Commands\n";
-    helpMessage += "`sudo ping` Ping The Bot\n";
+    helpMessage += "`sudo ping` Ping The Bot";
     var helpEmbed = new Discord.MessageEmbed()
       .setColor('#5a7c82')
       .setTitle("Help")
-      .setDescription(helpMessage);
+      .setDescription(helpMessage)
+      .setTimestamp()
+      .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
     receivedMessage.channel.send(helpEmbed);
   }
 }
@@ -117,7 +121,9 @@ function listCommand(arguments, receivedMessage) {
   var helpEmbed = new Discord.MessageEmbed()
     .setColor('#5a7c82')
     .setTitle("Help")
-    .setDescription(helpMessage);
+    .setDescription(helpMessage)
+    .setTimestamp()
+    .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
   receivedMessage.channel.send(helpEmbed);
 }
 
