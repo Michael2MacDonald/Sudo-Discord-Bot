@@ -14,11 +14,13 @@ client.on('ready', () => {
 
 client.on('message', (receivedMessage) => {
     if (receivedMessage.author == client.user) { // Prevent bot from responding to its own messages
-      return
+      return;
     }
 
-    if (receivedMessage.content.startsWith("sudo") || receivedMessage.content.startsWith("Sudo")) {
-      processCommand(receivedMessage)
+    var messageSplit = receivedMessage.content.split(" "); // Split the message up in to pieces for each space
+    messageSplit[0] = messageSplit[0].toLowerCase();
+    if (messageSplit[0] == "sudo") { //check if message starts with sudo or Sudo
+      processCommand(receivedMessage);
     }
 })
 
@@ -49,20 +51,24 @@ client.on('messageReactionAdd', async (reaction, user) => {
 });
 
 function processCommand(receivedMessage) { // gets the command and processes what needs to be done
-  var fullCommand = receivedMessage.content.substr(1) // Remove the leading exclamation mark
-  var splitCommand = fullCommand.split(" ") // Split the message up in to pieces for each space
+  var fullCommand = receivedMessage.content.substr(5); // Remove the leading exclamation mark
+  var splitCommand = fullCommand.split(" "); // Split the message up in to pieces for each space
   var primaryCommand = splitCommand[0] // The first word directly after the exclamation is the command
   var arguments = splitCommand.slice(1) // All other words are arguments/parameters/options for the command
 
   primaryCommand = primaryCommand.toLowerCase(); // makes primary command lowercase so that we can detect if someone makes a command lIkE tHiS
 
-  console.log("Command received: " + primaryCommand)
-  console.log("Arguments: " + arguments) // There may not be any arguments
+  console.log("Command received: " + primaryCommand);
+  console.log("Arguments: " + arguments); // There may not be any arguments
 
   switch (primaryCommand) {
     case '-h':
     case 'help':
       helpCommand(arguments, receivedMessage);
+    break;
+    case '-l':
+    case 'list':
+      listCommand(arguments, receivedMessage);
     break;
     case 'ping':
       pingCommand(arguments, receivedMessage);
@@ -77,25 +83,42 @@ function helpCommand(arguments, receivedMessage) {
     var difficultArgument = arguments[0];
     switch (difficultArgument) {
       case 'help':
-        receivedMessage.channel.send("`sudo help` or `sudo -h [command]`");
+        receivedMessage.channel.send("`sudo help`, `sudo -h`, or `sudo -h [command]`");
+      break;
+      case 'list':
+        receivedMessage.channel.send("`sudo list` or `sudo -l`");
       break;
       case 'ping':
         receivedMessage.channel.send("`sudo ping`");
       break;
       default:
-        receivedMessage.channel.send("I do not know this argument.");
+        receivedMessage.channel.send("I do not know this command.");
     }
   } else {
     var helpMessage = "Commands:\n";
     helpMessage += "`sudo help` or `sudo -h` Help Message (This Message)\n";
     helpMessage += "`sudo -h [command]` Help Message For Command\n";
+    helpMessage += "`sudo list` or `sudo -l` List Commands\n";
     helpMessage += "`sudo ping` Ping The Bot\n";
     var helpEmbed = new Discord.MessageEmbed()
-      .setColor('#90ee90')
+      .setColor('#5a7c82')
       .setTitle("Help")
       .setDescription(helpMessage);
     receivedMessage.channel.send(helpEmbed);
   }
+}
+
+function listCommand(arguments, receivedMessage) {
+  var helpMessage = "Commands:\n";
+  helpMessage += "`sudo help` or `sudo -h` Help Message\n";
+  helpMessage += "`sudo -h [command]` Help Message For Command\n";
+  helpMessage += "`sudo list` or `sudo -l` List Commands (This Message)\n";
+  helpMessage += "`sudo ping` Ping The Bot\n";
+  var helpEmbed = new Discord.MessageEmbed()
+    .setColor('#5a7c82')
+    .setTitle("Help")
+    .setDescription(helpMessage);
+  receivedMessage.channel.send(helpEmbed);
 }
 
 function pingCommand(arguments, receivedMessage) {
@@ -108,7 +131,7 @@ function pingCommand(arguments, receivedMessage) {
 
   var embed = new Discord.MessageEmbed()
     .setTitle('Retrieving your pong...')
-    .setColor('#90ee90')
+    .setColor('#5a7c82')
     .setTimestamp(new Date())
     //.setFooter(client.footer, icon)
   receivedMessage.channel.send(embed).then(m => {
