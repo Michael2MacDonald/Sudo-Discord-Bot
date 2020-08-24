@@ -73,6 +73,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'ping':
       pingCommand(arguments, receivedMessage);
     break;
+    case 'softban':
+      softBanCommand(arguments, receivedMessage);
+    break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
   }
@@ -103,7 +106,7 @@ function helpCommand(arguments, receivedMessage) {
     helpMessage += "`sudo list` or `sudo -l` List Commands\n";
     helpMessage += "`sudo ping` Ping The Bot";
     var helpEmbed = new Discord.MessageEmbed()
-      .setColor('#5a7c82')
+      .setColor('#577a9a')
       .setTitle("Help")
       .setDescription(helpMessage)
       .setTimestamp()
@@ -119,7 +122,7 @@ function listCommand(arguments, receivedMessage) {
   helpMessage += "`sudo list` or `sudo -l` List Commands (This Message)\n";
   helpMessage += "`sudo ping` Ping The Bot\n";
   var helpEmbed = new Discord.MessageEmbed()
-    .setColor('#5a7c82')
+    .setColor('#577a9a')
     .setTitle("Help")
     .setDescription(helpMessage)
     .setTimestamp()
@@ -128,16 +131,9 @@ function listCommand(arguments, receivedMessage) {
 }
 
 function pingCommand(arguments, receivedMessage) {
-  // var placeMessage = "Pong";
-  // var placeEmbed = new Discord.MessageEmbed()
-  //   .setColor('#90ee90')
-  //   .setTitle("Ping")
-  //   .setDescription(placeMessage);
-  // receivedMessage.channel.send(placeEmbed);
-
   var embed = new Discord.MessageEmbed()
     .setTitle('Retrieving your pong...')
-    .setColor('#5a7c82')
+    .setColor('#577a9a')
     .setTimestamp(new Date())
     //.setFooter(client.footer, icon)
   receivedMessage.channel.send(embed).then(m => {
@@ -145,4 +141,25 @@ function pingCommand(arguments, receivedMessage) {
     m.edit(embed)
   })
 }
+
+function softBanCommand(arguments, receivedMessage) {
+  if (!receivedMessage.member.hasPermission("BAN_MEMBERS")) {
+    // var Usertokick = receivedMessage.mentions.members.first()
+    // Usertokick.kick()
+    try {
+      var userToSoftBan = receivedMessage.mentions.members.first()
+      userToSoftBan.ban()
+      receivedMessage.guild.members.unban(userToSoftBan);
+      receivedMessage.channel.send("Successfully Soft Banned <@" + userToSoftBan + ">")
+    } catch {
+      receivedMessage.channel.send("I do not have permissions to softban " + userToSoftBan + " or something else went wrong")
+      console.error
+    }
+
+  }
+  else {
+    receivedMessage.channel.send("You do not have permissions to soft ban " + receivedMessage.mentions.first())
+  }
+}
+
 client.login(config.token);
