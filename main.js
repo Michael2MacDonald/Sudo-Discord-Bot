@@ -76,6 +76,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'softban':
       softBanCommand(arguments, receivedMessage);
     break;
+    case 'ban':
+      banCommand(arguments, receivedMessage);
+    break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
   }
@@ -134,31 +137,50 @@ function pingCommand(arguments, receivedMessage) {
   var embed = new Discord.MessageEmbed()
     .setTitle('Retrieving your pong...')
     .setColor('#577a9a')
-    .setTimestamp(new Date())
+    .setTimestamp(new Date());
     //.setFooter(client.footer, icon)
   receivedMessage.channel.send(embed).then(m => {
-    embed.setTitle(`🏓 Pong! Round-trip latency is ${m.createdTimestamp - receivedMessage.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms.`)
-    m.edit(embed)
+    embed.setTitle(`🏓 Pong! Round-trip latency is ${m.createdTimestamp - receivedMessage.createdTimestamp}ms. API Latency is ${Math.round(client.ws.ping)}ms.`);
+    m.edit(embed);
   })
 }
 
 function softBanCommand(arguments, receivedMessage) {
-  if (!receivedMessage.member.hasPermission("BAN_MEMBERS")) {
-    // var Usertokick = receivedMessage.mentions.members.first()
-    // Usertokick.kick()
+  if (receivedMessage.member.hasPermission("BAN_MEMBERS")) {
     try {
-      var userToSoftBan = receivedMessage.mentions.members.first()
-      userToSoftBan.ban()
+      var userToSoftBan = receivedMessage.mentions.members.first();
+      userToSoftBan.ban();
       receivedMessage.guild.members.unban(userToSoftBan);
-      receivedMessage.channel.send("Successfully Soft Banned <@" + userToSoftBan + ">")
+      receivedMessage.channel.send("Successfully Soft Banned <@" + userToSoftBan + ">");
     } catch {
-      receivedMessage.channel.send("I do not have permissions to softban " + userToSoftBan + " or something else went wrong")
-      console.error
+      receivedMessage.channel.send("I do not have permissions to softban " + userToSoftBan + " or something else went wrong");
+      console.error;
     }
-
   }
   else {
-    receivedMessage.channel.send("You do not have permissions to soft ban " + receivedMessage.mentions.first())
+    receivedMessage.channel.send("You do not have permissions to soft ban " + receivedMessage.mentions.members.first() );
+  }
+}
+
+function banCommand(arguments, receivedMessage) {
+  if (receivedMessage.member.hasPermission("BAN_MEMBERS")) {
+    try {
+      var reason = " ";
+      for (var i = 1; i < arguments.length; i++) {
+        reason += arguments[i];
+        reason += " ";
+      }
+      var userToBan = receivedMessage.mentions.members.first();
+      userToBan.ban();
+      userToBan.send("You were banned from " + receivedMessage.guild.name + "\n**Reason:**\n```" + reason + "```");
+      receivedMessage.channel.send("Successfully Banned <@" + userToBan + ">");
+    } catch {
+      receivedMessage.channel.send("I do not have permissions to softban " + userToBan + " or something else went wrong");
+      console.error;
+    }
+  }
+  else {
+    receivedMessage.channel.send("You do not have permissions to soft ban " + receivedMessage.mentions.members.first());
   }
 }
 
