@@ -79,6 +79,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'ban':
       banCommand(arguments, receivedMessage);
     break;
+    case 'mod':
+      modCommand(arguments, receivedMessage);
+    break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
   }
@@ -145,12 +148,32 @@ function pingCommand(arguments, receivedMessage) {
   })
 }
 
+function modCommand(arguments, receivedMessage) {
+  var message = "Commands:\n";
+  message += "`sudo mod` Mod Message (This Message)\n";
+  message += "`sudo softban [@user] [reason]` ban then unban to delete all users messages. Need KICK_MEMBERS permission\n";
+  message += "`sudo ban [@user] [reason]` ban. Need BAN_MEMBERS permission\n";
+  var embed = new Discord.MessageEmbed()
+    .setColor('#577a9a')
+    .setTitle("Help")
+    .setDescription(message)
+    .setTimestamp()
+    .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+  receivedMessage.channel.send(embed);
+}
+
 function softBanCommand(arguments, receivedMessage) {
-  if (receivedMessage.member.hasPermission("BAN_MEMBERS")) {
+  if (receivedMessage.member.hasPermission("KICK_MEMBERS")) {
     try {
+      var reason = " ";
+      for (var i = 1; i < arguments.length; i++) {
+        reason += arguments[i];
+        reason += " ";
+      }
       var userToSoftBan = receivedMessage.mentions.members.first();
       userToSoftBan.ban();
       receivedMessage.guild.members.unban(userToSoftBan);
+      userToSoftBan.send("You were banned from " + receivedMessage.guild.name + "\n**Reason:**\n```" + reason + "```");
       receivedMessage.channel.send("Successfully Soft Banned <@" + userToSoftBan + ">");
     } catch {
       receivedMessage.channel.send("I do not have permissions to softban " + userToSoftBan + " or something else went wrong");
