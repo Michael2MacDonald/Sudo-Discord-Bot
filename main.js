@@ -1,6 +1,6 @@
 // Part that says that this is a Discord bot
 const Discord = require('discord.js');
-const client = new Discord.Client();
+const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION'] });
 
 const config = require('./config.json'); // gets credentials
 
@@ -24,28 +24,26 @@ client.on('message', (receivedMessage) => {
     }
 })
 
-client.on('messageReactionAdd', async (reaction, user) => {
-	// When we receive a reaction we check if the reaction is partial or not
-	if (reaction.partial) {
-		// If the message this reaction belongs to was removed the fetching might result in an API error, which we need to handle
-		try {
-			await reaction.fetch();
-		} catch (error) {
-			console.log('Something went wrong when fetching the message: ', error);
-			// Return as `reaction.message.author` may be undefined/null
-			return;
-		}
+client.on("messageReactionAdd", (reaction, user) => {//729743124079050807 addRole('729393625246597192')
+  console.log("clicked");
+  if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == "729743124079050807"){
+    console.log("clicked");
+    if (reaction.emoji.name == '🌦️') {
+      //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
+      reaction.message.guild.member(user).roles.add('729393625246597192').catch(console.error);
+      console.log("clicked");
+    }
   }
+});
 
-  var reactionMade = reaction.emoji.name;
-
-  if (user.bot) { // checks if the reaction was to one of the messages made by a bot
-    return;
-  } else {
-    if (reaction.message.embeds[0].length > 0) { // checks if the message that is being reacted to is an embed
-      if (reaction.message.embeds[0].title.startsWith("Suggestion")) { // checks if the message being reacted to is a suggestion
-        switchSuggestion(reaction, user, reactionMade);
-      }
+client.on("messageReactionRemove", (reaction, user) => {//729743124079050807 addRole('729393625246597192')
+  console.log("clicked");
+  if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == "729743124079050807"){
+    console.log("clicked");
+    if (reaction.emoji.name == '🌦️') {
+      //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
+      reaction.message.guild.member(user).roles.remove('729393625246597192').catch(console.error);
+      console.log("clicked");
     }
   }
 });
