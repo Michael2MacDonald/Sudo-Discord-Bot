@@ -16,7 +16,12 @@ client.on('message', (receivedMessage) => {
     if (receivedMessage.author == client.user) { // Prevent bot from responding to its own messages
       return;
     }
-
+    if (receivedMessage.content.includes('discord.gg/'||'discordapp.com/invite/')) { //if it contains an invite link
+      if(!receivedMessage.member.hasPermission("KICK_MEMBERS")) {
+        receivedMessage.delete() //delete the message
+        return;
+      }
+    }
     var messageSplit = receivedMessage.content.split(" "); // Split the message up in to pieces for each space
     messageSplit[0] = messageSplit[0].toLowerCase();
     if (messageSplit[0] == "sudo") { //check if message starts with sudo or Sudo
@@ -24,26 +29,24 @@ client.on('message', (receivedMessage) => {
     }
 })
 
-client.on("messageReactionAdd", (reaction, user) => {//729743124079050807 addRole('729393625246597192')
-  console.log("clicked");
+client.on('messageDelete', function(message, channel){
+  client.channels.cache.get('735547551683706903').send(message.guild.member() + "'s message was deleted from  + channel.name() + . Message content:");
+});
+
+client.on("messageReactionAdd", (reaction, user) => {
   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == "729743124079050807"){
-    console.log("clicked");
     if (reaction.emoji.name == '🌦️') {
       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
       reaction.message.guild.member(user).roles.add('729393625246597192').catch(console.error);
-      console.log("clicked");
     }
   }
 });
 
-client.on("messageReactionRemove", (reaction, user) => {//729743124079050807 addRole('729393625246597192')
-  console.log("clicked");
+client.on("messageReactionRemove", (reaction, user) => {
   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == "729743124079050807"){
-    console.log("clicked");
     if (reaction.emoji.name == '🌦️') {
       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
       reaction.message.guild.member(user).roles.remove('729393625246597192').catch(console.error);
-      console.log("clicked");
     }
   }
 });
@@ -76,6 +79,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     break;
     case 'ban':
       banCommand(arguments, receivedMessage);
+    break;
+    case 'kick':
+      kickCommand(arguments, receivedMessage);
     break;
     case 'mod':
       modCommand(arguments, receivedMessage);
@@ -179,7 +185,7 @@ function softBanCommand(arguments, receivedMessage) {
     }
   }
   else {
-    receivedMessage.channel.send("You do not have permissions to soft ban " + receivedMessage.mentions.members.first() );
+    receivedMessage.channel.send("You do not have permissions to softban " + receivedMessage.mentions.members.first() );
   }
 }
 
@@ -196,12 +202,34 @@ function banCommand(arguments, receivedMessage) {
       userToBan.send("You were banned from " + receivedMessage.guild.name + "\n**Reason:**\n```" + reason + "```");
       receivedMessage.channel.send("Successfully Banned <@" + userToBan + ">");
     } catch {
-      receivedMessage.channel.send("I do not have permissions to softban " + userToBan + " or something else went wrong");
+      receivedMessage.channel.send("I do not have permissions to ban " + userToBan + " or something else went wrong");
       console.error;
     }
   }
   else {
-    receivedMessage.channel.send("You do not have permissions to soft ban " + receivedMessage.mentions.members.first());
+    receivedMessage.channel.send("You do not have permissions to ban " + receivedMessage.mentions.members.first());
+  }
+}
+
+function kickCommand(arguments, receivedMessage) {
+  if (receivedMessage.member.hasPermission("KICK_MEMBERS")) {
+    try {
+      var reason = " ";
+      for (var i = 1; i < arguments.length; i++) {
+        reason += arguments[i];
+        reason += " ";
+      }
+      var userToKick = receivedMessage.mentions.members.first();
+      userToKick.send("You were kicked from " + receivedMessage.guild.name + "\n**Reason:**\n```" + reason + "```");
+      userToKick.kick();
+      receivedMessage.channel.send("Successfully kicked <@" + userToKick + ">");
+    } catch {
+      receivedMessage.channel.send("I do not have permissions to kick " + userToKick + " or something else went wrong");
+      console.error;
+    }
+  }
+  else {
+    receivedMessage.channel.send("You do not have permissions to kick " + receivedMessage.mentions.members.first());
   }
 }
 
