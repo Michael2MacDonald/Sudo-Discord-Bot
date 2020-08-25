@@ -29,9 +29,9 @@ client.on('message', (receivedMessage) => {
     }
 })
 
-client.on('messageDelete', function(message, channel){
-  client.channels.cache.get('735547551683706903').send(message.guild.member() + "'s message was deleted from  + channel.name() + . Message content:");
-});
+// client.on('messageDelete', function(message, channel){
+//   client.channels.cache.get('735547551683706903').send(message.guild.member() + "'s message was deleted from  + channel.name() + . Message content:");
+// });
 
 client.on("messageReactionAdd", (reaction, user) => {
   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == "729743124079050807"){
