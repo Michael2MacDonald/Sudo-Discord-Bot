@@ -1,8 +1,9 @@
 // Part that says that this is a Discord bot
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'REACTION'] });
-
-const config = require('./config.json'); // gets credentials
+// gets credentials
+//const config = require('./config.json'); // uncomment this line
+const config = require('./config.json'); // comment out this line
 
 client.on('ready', () => {
     console.log("Connected as " + client.user.tag);
