@@ -1,10 +1,39 @@
 // Part that says that this is a Discord bot
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+var mysql = require('mysql');
 
 // gets credentials
 //const config = require('./config.json'); // uncomment this line
 const config = require('./config.private.json'); // comment out this line
+
+var serverConfigs = [];
+function getServerConfs(){
+  // establishes connection to database
+  var con = mysql.createConnection({
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
+  });
+  con.connect();
+  con.query("SELECT * FROM sudo_server_configs", (error, results, fields) => {
+    //console.log(results);
+    serverConfigs = results;
+  });
+  con.end();
+}
+function getServerConf(serverId){
+  for (var i = 0; i < serverConfigs.length; i++) {
+    if (serverConfigs[i].server_id == serverId) {
+      return serverConfigs[i];
+    }
+  }
+}
+//call getServerConfs() every five seconds
+const interval = setInterval(function() {
+   getServerConfs();
+ }, 5000);
 
 client.on('ready', () => {
   console.log("Connected as " + client.user.tag);
@@ -13,6 +42,42 @@ client.on('ready', () => {
   console.log("Servers:");
   client.guilds.cache.forEach( (guild) => { console.log(" - " + guild.name) } );
 })
+
+client.on('messageDelete', function(message, channel){
+  if (!message.partial) {
+    //console.log(`It had content: "${message.content}"`);
+    var server = getServerConf(message.guild.id);
+    //make sure there is an entry for this server before using array or it will crash the bot
+    if(server){
+      //need to add check for log_channel_id
+      console.log(server.log_channel_id);
+      client.channels.cache.get(server.log_channel_id).send(`<@${message.member.id}>'s message was deleted from \`${message.channel.name}\`. Message content: \`\`\`${message.content}\`\`\``);
+    } else {
+      //make a config
+    }
+  } else {
+    //client.channels.cache.get('753649763911729232').send(`A undifined message was deleted`);
+  }
+});
+// console.log(rr.emojiid);
+// //var rrindex = "1";
+// client.on("messageReactionAdd", (reaction, user) => {
+//   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rr.messageid){
+//     if (reaction.emoji.name == rr.emojiid) {
+//       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
+//       reaction.message.guild.member(user).roles.add(rr.roleid).catch(console.error);
+//     }
+//   }
+// });
+// client.on("messageReactionRemove", (reaction, user) => {
+//   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rr.messageid){
+//     if (reaction.emoji.id == rr.emojiid) {
+//       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
+//       reaction.message.guild.member(user).roles.remove(rr.roleid).catch(console.error);
+//     }
+//   }
+// });
+
 
 client.on('message', (receivedMessage) => {
     if (receivedMessage.author == client.user) { // Prevent bot from responding to its own messages
@@ -53,6 +118,11 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     break;
     case 'ping':
       pingCommand(arguments, receivedMessage);
+    break;
+    case '-rr':
+    case 'reactionroles':
+    case 'reactionrole':
+      ReactionRolesCommand(arguments, receivedMessage);
     break;
     case 'softban':
       softBanCommand(arguments, receivedMessage);
@@ -97,7 +167,7 @@ function helpCommand(arguments, receivedMessage) {
     helpMessage += "It was made to be a very simmple and lightweight moderation bot with only the most important commands \n";
     helpMessage += "**Commands:**\n";
     helpMessage += "Use `sudo list` to list all commands\n";
-    helpMessage += "Use `sudo mod` to list all mod commands\n";
+    listMessage += "Use `sudo mod` to list all mod commands\n";
     helpMessage += "`sudo help` or `sudo -h` Help Message (This Message)\n";
     //helpMessage += "`sudo -h [command]` Help Message For Command\n";
     helpMessage += "`sudo list` or `sudo -l` List Commands\n";
@@ -224,13 +294,11 @@ function kickCommand(arguments, receivedMessage) {
   }
 }
 
-// TODO:
-// manualy delete each message because bulkDelete(messages) limits you to message less than 14 days old
 function purgeCommand(arguments, receivedMessage){
   if (receivedMessage.member.hasPermission("MANAGE_MESSAGES")) {
     var messagecount =+ arguments[0];
     messagecount++;
-    let  = messagecount.toString();
+    let messagecountstr = messagecount.toString();
     receivedMessage.channel.messages.fetch({ limit: messagecountstr })
      .then(messages => {
        receivedMessage.channel.bulkDelete(messages);
