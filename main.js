@@ -108,7 +108,7 @@ function helpCommand(arguments, receivedMessage) {
       .setTitle("Help")
       .setDescription(helpMessage)
       .setTimestamp()
-      .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+      .setFooter('This bot was made by Michael2#1343', 'https://github.com/Michael2MacDonald/Sudo-Discord-Bot');
     receivedMessage.channel.send(helpEmbed);
   }
 }
@@ -127,7 +127,7 @@ function listCommand(arguments, receivedMessage) {
     .setTitle("Help")
     .setDescription(listMessage)
     .setTimestamp()
-    .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+    .setFooter('This bot was made by Michael2#1343', 'https://github.com/Michael2MacDonald/Sudo-Discord-Bot');
   receivedMessage.channel.send(listEmbed);
 }
 
@@ -154,7 +154,7 @@ function modCommand(arguments, receivedMessage) {
     .setTitle("Help")
     .setDescription(message)
     .setTimestamp()
-    .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+    .setFooter('This bot was made by Michael2#1343', 'https://github.com/Michael2MacDonald/Sudo-Discord-Bot');
   receivedMessage.channel.send(embed);
 }
 
