@@ -167,7 +167,7 @@ function helpCommand(arguments, receivedMessage) {
     helpMessage += "It was made to be a very simmple and lightweight moderation bot with only the most important commands \n";
     helpMessage += "**Commands:**\n";
     helpMessage += "Use `sudo list` to list all commands\n";
-    listMessage += "Use `sudo mod` to list all mod commands\n";
+    helpMessage += "Use `sudo mod` to list all mod commands\n";
     helpMessage += "`sudo help` or `sudo -h` Help Message (This Message)\n";
     //helpMessage += "`sudo -h [command]` Help Message For Command\n";
     helpMessage += "`sudo list` or `sudo -l` List Commands\n";
@@ -294,6 +294,8 @@ function kickCommand(arguments, receivedMessage) {
   }
 }
 
+// TODO:
+// manualy delete each message because bulkDelete(messages) limits you to message less than 14 days old
 function purgeCommand(arguments, receivedMessage){
   if (receivedMessage.member.hasPermission("MANAGE_MESSAGES")) {
     var messagecount =+ arguments[0];
