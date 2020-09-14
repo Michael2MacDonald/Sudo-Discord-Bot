@@ -1,3 +1,7 @@
 {
-	"token": "Put_Token_Here"
+	"token": "Put_Token_Here",
+	"host": "Put_Host_Here",
+	"user": "Put_User_Here",
+	"password": "Put_Password_Here",
+	"database": "Put_DB_Here"
 }
