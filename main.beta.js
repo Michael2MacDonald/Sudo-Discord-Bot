@@ -49,10 +49,11 @@ client.on('messageDelete', function(message, channel){
     var server = getServerConf(message.guild.id);
     //make sure there is an entry for this server before using array or it will crash the bot
     if(server){
+      //need to add check for log_channel_id
       console.log(server.log_channel_id);
       client.channels.cache.get(server.log_channel_id).send(`<@${message.member.id}>'s message was deleted from \`${message.channel.name}\`. Message content: \`\`\`${message.content}\`\`\``);
     } else {
-      //do something
+      //make a config
     }
   } else {
     //client.channels.cache.get('753649763911729232').send(`A undifined message was deleted`);
