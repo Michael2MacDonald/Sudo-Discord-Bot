@@ -174,6 +174,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'setlog':
      setLogCommand(arguments, receivedMessage);
     break;
+    case 'log':
+     logCommand(arguments, receivedMessage);
+    break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
   }
@@ -380,6 +383,68 @@ function setLogCommand(arguments, receivedMessage){
 
     con.end();
   }
+}
+
+function logCommand(arguments, receivedMessage){
+  if(arguments[0] == "set" || arguments[0] == "-s"){
+    if (receivedMessage.member.hasPermission("ADMINISTRATOR")) {
+      var con = mysql.createConnection({
+        host: config.host,
+        user: config.user,
+        password: config.password,
+        database: config.database
+      });
+
+      let server = receivedMessage.guild.id; // ID of the guild the message was sent in
+      let channel = receivedMessage.channel.id; // ID of the channel the message was sent in
+      console.log(channel + "  " + server);
+
+      con.connect();
+      console.log(getServerConf(server));
+      if(!getServerConf(server)){
+        //console.log("set");
+        con.query("INSERT INTO `sudo_server_configs` (`server_id`, `log_channel_id`) VALUES ('" + server + "', '" + channel + "')", (error, results, fields) => {
+          console.log(error);
+          receivedMessage.channel.send("Set log channel!").then(message => message.delete(5000));
+        });
+      }
+      else {
+        // console.log("UPDATE sudo_server_configs SET log_channel_id='" + channel + "' WHERE server_id='" + server + "')");
+        //console.log("update");
+        con.query("UPDATE `sudo_server_configs` SET `log_channel_id`='" + channel + "' WHERE `server_id`='" + server + "'", (error, results, fields) => {
+          console.log(error);
+          receivedMessage.channel.send("Updated log channel!").then(message => message.delete(5000));
+        });
+      }
+      con.end();
+    }
+  }
+
+
+  if(arguments[0] == "remove" || arguments[0] == "-r"){
+    if (receivedMessage.member.hasPermission("ADMINISTRATOR")) {
+      var con = mysql.createConnection({
+        host: config.host,
+        user: config.user,
+        password: config.password,
+        database: config.database
+      });
+
+      let server = receivedMessage.guild.id; // ID of the guild the message was sent in
+      let channel = receivedMessage.channel.id; // ID of the channel the message was sent in
+      console.log(channel + "  " + server);
+
+      con.connect();
+      //console.log(getServerConf(server));
+      // console.log("clear");
+      con.query("DELETE FROM `sudo_server_configs` WHERE `server_id` = '" + server + "'", (error, results, fields) => {
+        console.log(error);
+        receivedMessage.channel.send("Removed log channel!").then(message => message.delete(5000));
+      });
+      con.end();
+    }
+  }
+
 }
 
 client.login(config.token);
