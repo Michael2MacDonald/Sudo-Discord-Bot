@@ -21,19 +21,50 @@ function getServerConfs(){
     //console.log(results);
     serverConfigs = results;
   });
+
+
+  // return new Promise(function(resolve, reject) {
+  //   con.query("SELECT * FROM sudo_server_configs", function(error, results, fields) {
+  //     if (error){
+  //       resolve("SQL_ERROR");
+  //     };
+  //     resolve(results);
+  //     // if (results.length > 0){
+  //     //
+  //     //   resolve(results);
+  //     // } else {
+  //     //   resolve("NO_BOARD");
+  //     // }
+  //   });
+  // });
+
+
   con.end();
 }
 function getServerConf(serverId){
+  getServerConfs();
   for (var i = 0; i < serverConfigs.length; i++) {
     if (serverConfigs[i].server_id == serverId) {
       return serverConfigs[i];
     }
   }
+
+
+  // getServerConfs() // checks database collected for machine learning
+  // .then((result) => {
+  //   for (var i = 0; i < result.length; i++) {
+  //     if (result[i].server_id == serverId) {
+  //       return result[i];
+  //     }
+  //   }
+  // });
+
+
 }
 //call getServerConfs() every five seconds
 const interval = setInterval(function() {
-   getServerConfs();
- }, 5000);
+  getServerConfs();
+}, 5000);
 
 client.on('ready', () => {
   console.log("Connected as " + client.user.tag);
@@ -140,6 +171,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'purge':
       purgeCommand(arguments, receivedMessage);
     break;
+    case 'setlog':
+     setLogCommand(arguments, receivedMessage);
+    break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
   }
@@ -163,21 +197,21 @@ function helpCommand(arguments, receivedMessage) {
     }
   } else {
     var helpMessage = "**About:**\n";
-    helpMessage += "This bot was made by ``Michael2#13431`` \n";
-    helpMessage += "It was made to be a very simmple and lightweight moderation bot with only the most important commands \n";
+    helpMessage += "This bot was made by ``Michael2#1343`` \n";
+    helpMessage += "It was made to be a very simple and lightweight moderation bot with only the most important commands \n";
     helpMessage += "**Commands:**\n";
     helpMessage += "Use `sudo list` to list all commands\n";
-    listMessage += "Use `sudo mod` to list all mod commands\n";
+    helpMessage += "Use `sudo mod` to list all mod commands\n";
     helpMessage += "`sudo help` or `sudo -h` Help Message (This Message)\n";
     //helpMessage += "`sudo -h [command]` Help Message For Command\n";
-    helpMessage += "`sudo list` or `sudo -l` List Commands\n";
+    //helpMessage += "`sudo list` or `sudo -l` List Commands\n";
 
     var helpEmbed = new Discord.MessageEmbed()
       .setColor('#577a9a')
       .setTitle("Help")
       .setDescription(helpMessage)
       .setTimestamp()
-      .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+      .setFooter('This bot was made by Michael2#1343', 'https://discord.com/oauth2/authorize?client_id=747475521302036571&permissions=8&scope=bot');
     receivedMessage.channel.send(helpEmbed);
   }
 }
@@ -310,6 +344,41 @@ function purgeCommand(arguments, receivedMessage){
        console.log("Error while doing Bulk Delete");
        console.log(err);
      });
+  }
+}
+
+function setLogCommand(arguments, receivedMessage){
+  if (receivedMessage.member.hasPermission("ADMINISTRATOR")) {
+    var con = mysql.createConnection({
+      host: config.host,
+      user: config.user,
+      password: config.password,
+      database: config.database
+    });
+
+    let server = receivedMessage.guild.id; // ID of the guild the message was sent in
+    let channel = receivedMessage.channel.id; // ID of the channel the message was sent in
+    console.log(channel + "  " + server);
+
+    con.connect();
+    console.log(getServerConf(server));
+    if(!getServerConf(server)){
+      console.log("set");
+      con.query("INSERT INTO `sudo_server_configs` (`server_id`, `log_channel_id`) VALUES ('" + server + "', '" + channel + "')", (error, results, fields) => {
+        console.log(error);
+        receivedMessage.channel.send("Set log channel!").then(message => message.delete(5000));
+      });
+    }
+    else {
+      // console.log("UPDATE sudo_server_configs SET log_channel_id='" + channel + "' WHERE server_id='" + server + "')");
+      console.log("update");
+      con.query("UPDATE `sudo_server_configs` SET `log_channel_id`='" + channel + "' WHERE `server_id`='" + server + "'", (error, results, fields) => {
+        console.log(error);
+        receivedMessage.channel.send("Updated log channel!").then(message => message.delete(5000));
+      });
+    }
+
+    con.end();
   }
 }
 
