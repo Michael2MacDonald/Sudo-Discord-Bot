@@ -403,7 +403,7 @@ function logCommand(arguments, receivedMessage){
       // console.log("clear");
       con.query("DELETE FROM `sudo_server_configs` WHERE `server_id` = '" + server + "'", (error, results, fields) => {
         console.log(error);
-        receivedMessage.channel.send("Removed log channel!").then(message => message.delete(5000));
+        receivedMessage.channel.send("Disabled log channel!").then(message => message.delete(5000));
       });
       con.end();
     }
