@@ -2,4 +2,6 @@
 
 under development
 
-Forked from my bot made specifically for the Weather Station Project discord server https://discord.gg/94b3ngb
+Made for my servers but I thought I would make my code public if anyone wants to use it or steal pieces of my code.
+
+It will support logs, reaction roles, auto roles, purge, kick, ban, softban, and channel lock when done
