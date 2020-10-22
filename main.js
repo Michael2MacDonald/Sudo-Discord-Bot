@@ -1,10 +1,70 @@
 // Part that says that this is a Discord bot
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
+var mysql = require('mysql');
 
 // gets credentials
 //const config = require('./config.json'); // uncomment this line
 const config = require('./config.private.json'); // comment out this line
+
+var serverConfigs = [];
+function getServerConfs(){
+  // establishes connection to database
+  var con = mysql.createConnection({
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
+  });
+  con.connect();
+  con.query("SELECT * FROM sudo_server_configs", (error, results, fields) => {
+    //console.log(results);
+    serverConfigs = results;
+  });
+
+
+  // return new Promise(function(resolve, reject) {
+  //   con.query("SELECT * FROM sudo_server_configs", function(error, results, fields) {
+  //     if (error){
+  //       resolve("SQL_ERROR");
+  //     };
+  //     resolve(results);
+  //     // if (results.length > 0){
+  //     //
+  //     //   resolve(results);
+  //     // } else {
+  //     //   resolve("NO_BOARD");
+  //     // }
+  //   });
+  // });
+
+
+  con.end();
+}
+function getServerConf(serverId){
+  getServerConfs();
+  for (var i = 0; i < serverConfigs.length; i++) {
+    if (serverConfigs[i].server_id == serverId) {
+      return serverConfigs[i];
+    }
+  }
+
+
+  // getServerConfs() // checks database collected for machine learning
+  // .then((result) => {
+  //   for (var i = 0; i < result.length; i++) {
+  //     if (result[i].server_id == serverId) {
+  //       return result[i];
+  //     }
+  //   }
+  // });
+
+
+}
+//call getServerConfs() every five seconds
+const interval = setInterval(function() {
+  getServerConfs();
+}, 5000);
 
 client.on('ready', () => {
   console.log("Connected as " + client.user.tag);
@@ -13,6 +73,42 @@ client.on('ready', () => {
   console.log("Servers:");
   client.guilds.cache.forEach( (guild) => { console.log(" - " + guild.name) } );
 })
+
+client.on('messageDelete', function(message, channel){
+  if (!message.partial) {
+    //console.log(`It had content: "${message.content}"`);
+    var server = getServerConf(message.guild.id);
+    //make sure there is an entry for this server before using array or it will crash the bot
+    if(server){
+      //need to add check for log_channel_id
+      console.log(server.log_channel_id);
+      client.channels.cache.get(server.log_channel_id).send(`<@${message.member.id}>'s message was deleted from \`${message.channel.name}\`. Message content: \`\`\`${message.content}\`\`\``);
+    } else {
+      //make a config
+    }
+  } else {
+    //client.channels.cache.get('753649763911729232').send(`A undifined message was deleted`);
+  }
+});
+// console.log(rr.emojiid);
+// //var rrindex = "1";
+// client.on("messageReactionAdd", (reaction, user) => {
+//   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rr.messageid){
+//     if (reaction.emoji.name == rr.emojiid) {
+//       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
+//       reaction.message.guild.member(user).roles.add(rr.roleid).catch(console.error);
+//     }
+//   }
+// });
+// client.on("messageReactionRemove", (reaction, user) => {
+//   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rr.messageid){
+//     if (reaction.emoji.id == rr.emojiid) {
+//       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
+//       reaction.message.guild.member(user).roles.remove(rr.roleid).catch(console.error);
+//     }
+//   }
+// });
+
 
 client.on('message', (receivedMessage) => {
     if (receivedMessage.author == client.user) { // Prevent bot from responding to its own messages
@@ -54,6 +150,11 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'ping':
       pingCommand(arguments, receivedMessage);
     break;
+    case '-rr':
+    case 'reactionroles':
+    case 'reactionrole':
+      ReactionRolesCommand(arguments, receivedMessage);
+    break;
     case 'softban':
       softBanCommand(arguments, receivedMessage);
     break;
@@ -69,6 +170,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case '-p':
     case 'purge':
       purgeCommand(arguments, receivedMessage);
+    break;
+    case 'log':
+     logCommand(arguments, receivedMessage);
     break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
@@ -93,21 +197,21 @@ function helpCommand(arguments, receivedMessage) {
     }
   } else {
     var helpMessage = "**About:**\n";
-    helpMessage += "This bot was made by ``Michael2#13431`` \n";
-    helpMessage += "It was made to be a very simmple and lightweight moderation bot with only the most important commands \n";
+    helpMessage += "This bot was made by ``Michael2#1343`` \n";
+    helpMessage += "It was made to be a very simple and lightweight moderation bot with only the most important commands \n";
     helpMessage += "**Commands:**\n";
     helpMessage += "Use `sudo list` to list all commands\n";
     helpMessage += "Use `sudo mod` to list all mod commands\n";
     helpMessage += "`sudo help` or `sudo -h` Help Message (This Message)\n";
     //helpMessage += "`sudo -h [command]` Help Message For Command\n";
-    helpMessage += "`sudo list` or `sudo -l` List Commands\n";
+    //helpMessage += "`sudo list` or `sudo -l` List Commands\n";
 
     var helpEmbed = new Discord.MessageEmbed()
       .setColor('#577a9a')
       .setTitle("Help")
       .setDescription(helpMessage)
       .setTimestamp()
-      .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+      .setFooter('This bot was made by Michael2#1343', 'https://discord.com/oauth2/authorize?client_id=747475521302036571&permissions=8&scope=bot');
     receivedMessage.channel.send(helpEmbed);
   }
 }
@@ -148,6 +252,8 @@ function modCommand(arguments, receivedMessage) {
   message += "`sudo softban [@user] [reason]` ban then unban to delete all users messages. Need KICK_MEMBERS permission\n";
   message += "`sudo ban [@user] [reason]` ban. Need BAN_MEMBERS permission\n";
   message += "`sudo -p [number]` or `sudo purge [number]` Delete X number of messages in current channel. Need `DELETE_MESSAGES` permission\n";
+  message += "`sudo log set` or `sudo log -s` Set bot mod log channel. Run command in the channel you want to set as log channel. Need `ADMINISTRATOR` permission\n";
+  message += "`sudo log disable` or `sudo log -d` Disable bot mod log. Need `ADMINISTRATOR` permission\n";
   var embed = new Discord.MessageEmbed()
     .setColor('#577a9a')
     .setTitle("Help")
@@ -224,13 +330,11 @@ function kickCommand(arguments, receivedMessage) {
   }
 }
 
-// TODO:
-// manualy delete each message because bulkDelete(messages) limits you to message less than 14 days old
 function purgeCommand(arguments, receivedMessage){
   if (receivedMessage.member.hasPermission("MANAGE_MESSAGES")) {
     var messagecount =+ arguments[0];
     messagecount++;
-    let  = messagecount.toString();
+    let messagecountstr = messagecount.toString();
     receivedMessage.channel.messages.fetch({ limit: messagecountstr })
      .then(messages => {
        receivedMessage.channel.bulkDelete(messages);
@@ -243,6 +347,68 @@ function purgeCommand(arguments, receivedMessage){
        console.log(err);
      });
   }
+}
+
+function logCommand(arguments, receivedMessage){
+  if(arguments[0] == "set" || arguments[0] == "-s"){
+    if (receivedMessage.member.hasPermission("ADMINISTRATOR")) {
+      var con = mysql.createConnection({
+        host: config.host,
+        user: config.user,
+        password: config.password,
+        database: config.database
+      });
+
+      let server = receivedMessage.guild.id; // ID of the guild the message was sent in
+      let channel = receivedMessage.channel.id; // ID of the channel the message was sent in
+      console.log(channel + "  " + server);
+
+      con.connect();
+      console.log(getServerConf(server));
+      if(!getServerConf(server)){
+        //console.log("set");
+        con.query("INSERT INTO `sudo_server_configs` (`server_id`, `log_channel_id`) VALUES ('" + server + "', '" + channel + "')", (error, results, fields) => {
+          console.log(error);
+          receivedMessage.channel.send("Set log channel!").then(message => message.delete(5000));
+        });
+      }
+      else {
+        // console.log("UPDATE sudo_server_configs SET log_channel_id='" + channel + "' WHERE server_id='" + server + "')");
+        //console.log("update");
+        con.query("UPDATE `sudo_server_configs` SET `log_channel_id`='" + channel + "' WHERE `server_id`='" + server + "'", (error, results, fields) => {
+          console.log(error);
+          receivedMessage.channel.send("Updated log channel!").then(message => message.delete(5000));
+        });
+      }
+      con.end();
+    }
+  }
+
+
+  if(arguments[0] == "disable" || arguments[0] == "-d"){
+    if (receivedMessage.member.hasPermission("ADMINISTRATOR")) {
+      var con = mysql.createConnection({
+        host: config.host,
+        user: config.user,
+        password: config.password,
+        database: config.database
+      });
+
+      let server = receivedMessage.guild.id; // ID of the guild the message was sent in
+      let channel = receivedMessage.channel.id; // ID of the channel the message was sent in
+      console.log(channel + "  " + server);
+
+      con.connect();
+      //console.log(getServerConf(server));
+      // console.log("clear");
+      con.query("DELETE FROM `sudo_server_configs` WHERE `server_id` = '" + server + "'", (error, results, fields) => {
+        console.log(error);
+        receivedMessage.channel.send("Disabled log channel!").then(message => message.delete(5000));
+      });
+      con.end();
+    }
+  }
+
 }
 
 client.login(config.token);
