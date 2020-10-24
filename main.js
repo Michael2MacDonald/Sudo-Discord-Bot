@@ -8,6 +8,23 @@ var mysql = require('mysql');
 const config = require('./config.private.json'); // comment out this line
 
 var serverConfigs = [];
+var rrConfigs = [];
+
+function getrrConfigs(){
+  var con = mysql.createConnection({
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
+  });
+  con.connect();
+  con.query("SELECT * FROM `sudo_reaction_roles_configs`", (error, results, fields) => {
+    //console.log(results);
+    rrConfigs = results;
+  });
+  con.end();
+}
+
 function getServerConfs(){
   // establishes connection to database
   var con = mysql.createConnection({
@@ -21,7 +38,6 @@ function getServerConfs(){
     //console.log(results);
     serverConfigs = results;
   });
-
 
   // return new Promise(function(resolve, reject) {
   //   con.query("SELECT * FROM sudo_server_configs", function(error, results, fields) {
@@ -38,7 +54,6 @@ function getServerConfs(){
   //   });
   // });
 
-
   con.end();
 }
 function getServerConf(serverId){
@@ -49,7 +64,6 @@ function getServerConf(serverId){
     }
   }
 
-
   // getServerConfs() // checks database collected for machine learning
   // .then((result) => {
   //   for (var i = 0; i < result.length; i++) {
@@ -59,10 +73,10 @@ function getServerConf(serverId){
   //   }
   // });
 
-
 }
 //call getServerConfs() every five seconds
 const interval = setInterval(function() {
+  getrrConfigs();
   getServerConfs();
 }, 5000);
 
@@ -90,24 +104,28 @@ client.on('messageDelete', function(message, channel){
     //client.channels.cache.get('753649763911729232').send(`A undifined message was deleted`);
   }
 });
-// console.log(rr.emojiid);
-// //var rrindex = "1";
-// client.on("messageReactionAdd", (reaction, user) => {
-//   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rr.messageid){
-//     if (reaction.emoji.name == rr.emojiid) {
-//       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
-//       reaction.message.guild.member(user).roles.add(rr.roleid).catch(console.error);
-//     }
-//   }
-// });
-// client.on("messageReactionRemove", (reaction, user) => {
-//   if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rr.messageid){
-//     if (reaction.emoji.id == rr.emojiid) {
-//       //let i = reaction.message.guild.roles.find(reaction => reaction.name == rolename[]);
-//       reaction.message.guild.member(user).roles.remove(rr.roleid).catch(console.error);
-//     }
-//   }
-// });
+
+client.on("messageReactionAdd", (reaction, user) => {
+  getrrConfigs();
+  for (var i = 0; i < rrConfigs.length; i++) {
+    if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rrConfigs[i]['message_id']){
+      if (reaction.emoji.name == rrConfigs[i]['emoji']) {
+        reaction.message.guild.member(user).roles.add(rrConfigs[i]['role_id']).catch(console.error);
+      }
+    }
+  }
+
+});
+client.on("messageReactionRemove", (reaction, user) => {
+  getrrConfigs();
+  for (var i = 0; i < rrConfigs.length; i++) {
+    if (user && !user.bot && reaction.message.channel.guild && reaction.message.id == rrConfigs[i]['message_id']){
+      if (reaction.emoji.name == rrConfigs[i]['emoji']) {
+        reaction.message.guild.member(user).roles.remove(rrConfigs[i]['role_id']).catch(console.error);
+      }
+    }
+  }
+});
 
 
 client.on('message', (receivedMessage) => {
