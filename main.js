@@ -168,11 +168,6 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     case 'ping':
       pingCommand(arguments, receivedMessage);
     break;
-    case '-rr':
-    case 'reactionroles':
-    case 'reactionrole':
-      ReactionRolesCommand(arguments, receivedMessage);
-    break;
     case 'softban':
       softBanCommand(arguments, receivedMessage);
     break;
@@ -191,6 +186,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     break;
     case 'log':
      logCommand(arguments, receivedMessage);
+    break;
+    case 'rr':
+     rrCommand(arguments, receivedMessage);
     break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
@@ -426,7 +424,41 @@ function logCommand(arguments, receivedMessage){
       con.end();
     }
   }
+}
 
+
+function rrCommand(arguments, receivedMessage){
+  var con = mysql.createConnection({
+    host: config.host,
+    user: config.user,
+    password: config.password,
+    database: config.database
+  });
+  if(arguments[0] == "set" || arguments[0] == "-s"){
+    var con = mysql.createConnection({
+      host: config.host,
+      user: config.user,
+      password: config.password,
+      database: config.database
+    });
+    let role = receivedMessage.mentions.roles.first();
+    let server = receivedMessage.guild.id;
+    let message = arguments[1];
+    let emoji = arguments[2];
+    if(emoji && role && server && message){
+      con.connect();
+      //console.log(getServerConf(server));
+      // console.log("clear");
+      con.query("INSERT INTO `sudo_reaction_roles_configs`(`server_id`, `message_id`, `emoji`, `role_id`) VALUES ('" + server + "','" + message + "','" + emoji + "','" + role + "')", (error, results, fields) => {
+       console.log(error);
+       receivedMessage.channel.send("Set Reaction Role!");
+      });
+      con.end();
+    }
+    else{
+      console.log("ERROR");
+    }
+  }
 }
 
 client.login(config.token);
