@@ -2,6 +2,7 @@
 const Discord = require('discord.js');
 const client = new Discord.Client({ partials: ['MESSAGE', 'CHANNEL', 'REACTION'] });
 var mysql = require('mysql');
+const fetch = require('node-fetch');
 
 // gets credentials
 //const config = require('./config.json'); // uncomment this line
@@ -189,6 +190,9 @@ function processCommand(receivedMessage) { // gets the command and processes wha
     break;
     case 'rr':
      rrCommand(arguments, receivedMessage);
+    break;
+    case 'apod':
+     apodCommand(arguments, receivedMessage);
     break;
     default:
       receivedMessage.channel.send("I don't understand the command. Try `sudo help`, `sudo -h` or `sudo -h [command]`")
@@ -459,6 +463,31 @@ function rrCommand(arguments, receivedMessage){
       console.log("ERROR");
     }
   }
+}
+
+async function apodCommand(arguments, receivedMessage){
+  fetch('https://api.nasa.gov/planetary/apod?api_key=b2UVPO6zIhkupk3mCdf0AwA91rwdgpzpIOppuvBF') // replace url with your API endpoint
+  .then(response => response.json()) // use .json() to parse your JSON data
+  .then(data => {
+    console.log(data);
+    var apodMessage = "**" + data['title'] + "**\n";
+    apodMessage += data['explanation'];
+    apodMessage += '\n HD URL: ' + data['hdurl'];
+    apodMessage += '\n Date: ' + data['date'];
+    apodMessage += '\n Image copyright: ' + data['copyright'];
+
+    var apodEmbed = new Discord.MessageEmbed()
+      .setColor('#577a9a')
+      .setTitle("APOD")
+      .setDescription(apodMessage)
+      .setTimestamp()
+      .setFooter('This bot was made by Michael2#1343', 'https://discord.com/oauth2/authorize?client_id=747475521302036571&permissions=8&scope=bot');
+    receivedMessage.channel.send(apodEmbed);
+    receivedMessage.channel.send(data['hdurl']);
+
+  }) // do stuff with your parsed data
+  .catch(error => console.log(error)) // handle any errors
+
 }
 
 client.login(config.token);
