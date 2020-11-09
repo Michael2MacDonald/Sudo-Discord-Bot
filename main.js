@@ -130,20 +130,20 @@ client.on("messageReactionRemove", (reaction, user) => {
 
 
 client.on('message', (receivedMessage) => {
-    if (receivedMessage.author == client.user) { // Prevent bot from responding to its own messages
-      return;
-    }
-    if (receivedMessage.content.includes('discord.gg/'||'discordapp.com/invite/')) { //if it contains an invite link
-      if(!receivedMessage.member.hasPermission("KICK_MEMBERS")) {
-        receivedMessage.delete() //delete the message
-        return;
-      }
-    }
-    var messageSplit = receivedMessage.content.split(" "); // Split the message up in to pieces for each space
-    messageSplit[0] = messageSplit[0].toLowerCase();
-    if (messageSplit[0] == "sudo") { //check if message starts with sudo or Sudo
-      processCommand(receivedMessage);
-    }
+  if (receivedMessage.author == client.user) { // Prevent bot from responding to its own messages
+    return;
+  }
+  // if (receivedMessage.content.includes('discord.gg/'||'discordapp.com/invite/')) { //if it contains an invite link
+  //   if(!receivedMessage.member.hasPermission("KICK_MEMBERS")) {
+  //     receivedMessage.delete() //delete the message
+  //     return;
+  //   }
+  // }
+  var messageSplit = receivedMessage.content.split(" "); // Split the message up in to pieces for each space
+  messageSplit[0] = messageSplit[0].toLowerCase();
+  if (messageSplit[0] == "sudo") { //check if message starts with sudo or Sudo
+    processCommand(receivedMessage);
+  }
 })
 
 function processCommand(receivedMessage) { // gets the command and processes what needs to be done
@@ -231,7 +231,7 @@ function helpCommand(arguments, receivedMessage) {
       .setTitle("Help")
       .setDescription(helpMessage)
       .setTimestamp()
-      .setFooter('This bot was made by Michael2#1343', 'https://discord.com/oauth2/authorize?client_id=747475521302036571&permissions=8&scope=bot');
+      .setFooter('This bot was made by Michael2#1343');
     receivedMessage.channel.send(helpEmbed);
   }
 }
@@ -250,7 +250,7 @@ function listCommand(arguments, receivedMessage) {
     .setTitle("Help")
     .setDescription(listMessage)
     .setTimestamp()
-    .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+    .setFooter('This bot was made by Michael2#1343');
   receivedMessage.channel.send(listEmbed);
 }
 
@@ -268,18 +268,18 @@ function pingCommand(arguments, receivedMessage) {
 
 function modCommand(arguments, receivedMessage) {
   var message = "Commands:\n";
-  message += "`sudo mod` Mod Message (This Message)\n";
-  message += "`sudo softban [@user] [reason]` ban then unban to delete all users messages. Need KICK_MEMBERS permission\n";
-  message += "`sudo ban [@user] [reason]` ban. Need BAN_MEMBERS permission\n";
-  message += "`sudo -p [number]` or `sudo purge [number]` Delete X number of messages in current channel. Need `DELETE_MESSAGES` permission\n";
-  message += "`sudo log set` or `sudo log -s` Set bot mod log channel. Run command in the channel you want to set as log channel. Need `ADMINISTRATOR` permission\n";
-  message += "`sudo log disable` or `sudo log -d` Disable bot mod log. Need `ADMINISTRATOR` permission\n";
+  message += "• `sudo mod` Mod Message (This Message)\n";
+  message += "• `sudo softban [@user] [reason]` ban then unban to delete all users messages. Need KICK_MEMBERS permission\n";
+  message += "• `sudo ban [@user] [reason]` ban. Need BAN_MEMBERS permission\n";
+  message += "• `sudo -p [number]` or `sudo purge [number]` Delete X number of messages in current channel. Need `DELETE_MESSAGES` permission\n";
+  message += "• `sudo log set` or `sudo log -s` Set bot mod log channel. Run command in the channel you want to set as log channel. Need `ADMINISTRATOR` permission\n";
+  message += "• `sudo log disable` or `sudo log -d` Disable bot mod log. Need `ADMINISTRATOR` permission\n";
   var embed = new Discord.MessageEmbed()
     .setColor('#577a9a')
     .setTitle("Help")
     .setDescription(message)
     .setTimestamp()
-    .setFooter('This bot was made by Michael2#1343', 'https://weatherstationproject.com/');
+    .setFooter('This bot was made by Michael2#1343');
   receivedMessage.channel.send(embed);
 }
 
